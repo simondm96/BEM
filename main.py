@@ -96,7 +96,7 @@ def load_polar(filename, appendCSV=True):
             AppendCSV = Bool, defines if '.csv' should be added to filename, defaults to True
           
     Output:
-            polar     =  numpy array containing AoA, Cl, Cd, Cm
+            polar     =  numpy array containing AoA (degrees), Cl, Cd, Cm
     """
     if appendCSV:
         filename += '.csv' 
