@@ -22,12 +22,12 @@ class rotor:
             ends        = ndarray, contains the ends of each section, has length 
                           len(blades)+1
             twist       = ndarray, contains the twist of each section in radians
-            pitch       = float, global blade pitch in radians
+            pitch       = float, global blade pitch in radians (should this be included?)
             chord       = ndarray, chord distribution of each section in meter
             num_blades  = float, number of blades
             
     """
-    def __init___(self, num_blades, r_in, r_out, twist, chord, N=20):
+    def __init__(self, num_blades, r_in, r_out, twist, chord, N=20):
         """
         Initialises the rotor class
         
@@ -35,7 +35,16 @@ class rotor:
             num_blades  = int, number of blades
             r_in        = float, starting radius of the blade
         """
+        self.ends = np.linspace(r_in, r_out, num=N)
+        self.elements = middle_vals(self.ends)
+        self.twist = twist(self.elements, r_in, r_out)
+        self.chord = chord(self.elements, r_in, r_out)
+        self.num_blades = num_blades
         
+        
+def middle_vals(data):
+    return np.delete((np.roll(data,1)-data)/2+data,0)
+
 
 def twist(section, r_start, r_end):
     """
@@ -75,7 +84,7 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
     """
     Maps data with boundaries x_start1 and x_end1 to x_start2 and x_start2
     """
-    return x_start2 + (data-x_start1)*(x_end1-x_start1)/(x_end2-x_start1)
+    return x_start2 + (data-x_start1)*(x_end2-x_start2)/(x_end1-x_start1)
 
 
 def load_polar(filename, appendCSV=True):
