@@ -35,13 +35,14 @@ class rotor:
             num_blades  = int, number of blades
             r_in        = float, starting radius of the blade
         """
+        
 
 def twist(section, r_start, r_end):
     """
-    Generates a twist function
+    Generates a twist distrubution
     
     Input:
-        section     = ndarray, the section(s) for which the  twist should be
+        section     = ndarray, the section(s) for which the twist should be
                       calculated
                       
     Output:
@@ -51,6 +52,23 @@ def twist(section, r_start, r_end):
     section_norm = map_values(section,r_start, r_end, 0, 1)
     twist = 14*(1-section_norm)*np.pi/180.
     return twist
+
+
+def chord(section, r_start, r_end):
+    """
+    Generates a chord distribution
+    
+    Input:
+        section     = ndarray, the section(s) for which the chord should be
+                      calculated
+                      
+    Output:
+        twist       = ndarray, the chord for the section(s). If section is a
+                      float, returns a float
+    """
+    section_norm = map_values(section,r_start, r_end, 0, 1)
+    chord = (3*(1-section_norm)+1)
+    return chord
 
 
 def map_values(data, x_start1, x_end1, x_start2, x_end2):
