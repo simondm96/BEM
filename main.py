@@ -33,7 +33,12 @@ class rotor:
         
         Input:
             num_blades  = int, number of blades
-            r_in        = float, starting radius of the blade
+            r_in        = float, inner radius of the blade
+            r_out       = float, outer radius of the blade
+            chord       = function, defines the chord distribution
+            twist       = function, defines the twist distribution
+            N           = int, number of ends. The number of elements is N-1
+            
         """
         self.ends = np.linspace(r_in, r_out, num=N)
         self.elements = middle_vals(self.ends)
