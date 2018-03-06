@@ -133,3 +133,14 @@ def liftdragcalc(twist, u_inf, a, aprime, omega, r, chord, rho):
     return alpha, lift, drag, f_azim, f_axial
 
 
+def inductioncalc(f_azim, f_axial, nblades, rho, u_inf, r, deltar, lamda, R):
+    #axial induction
+    A_a = 2*np.pi()*r*deltar
+    
+    CT = (f_axial *nblades *deltar)/(0.5*rho*(u_inf**2)*A_a)
+    a = 0.5*(1-np.sqrt(1-CT))
+    #azimuthal induction
+    aprime = (f_azim*nblades)/(2*rho*(2*np.pi()*r)*(u_inf**2)*(1-a)*lamda*(r/R))
+    
+    return CT, a, aprime
+    
