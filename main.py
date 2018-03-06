@@ -111,4 +111,25 @@ def polarvalues(alpha):
                 data.append(b)
     return data
 
+def liftdragcalc(twist, u_inf, a, aprime, omega, r, chord, rho):
+    
+    v_ax = u_inf*(1-a)
+    v_tan = omega*r*(1-aprime)
+    
+    ratio = np.v_ax / v_tan
+    
+    phi = np.arctan(ratio)
+    
+    alpha = abs(phi - twist)
+    
+    vp = np.sqrt(v_ax**2 + v_tan**2)
+    
+    lift = 0.5*chord*rho*(vp**2)*polarvalues(alpha)[1]
+    drag = 0.5*chord*rho*(vp**2)*polarvalues(alpha)[2]
+    
+    f_azim = lift*(v_ax/vp) -drag*(v_tan/vp)
+    f_axial = lift*(v_tan/vp) +drag*(v_ax/vp)
+    
+    return alpha, lift, drag, f_azim, f_axial
+
 
