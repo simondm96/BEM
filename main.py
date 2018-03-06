@@ -92,7 +92,7 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
 
 def tip_root_correction(rotor, a, TSR):
     """
-    Applies Prantl's tip and hub correction to the forces
+    Applies Prandtl's tip and hub correction to the forces
     """
     mu_r = rotor.ends[0]/rotor.ends[-1]
     cst = np.sqrt(1+TSR**2*rotor.mu**2/((1-a)**2))
@@ -103,11 +103,32 @@ def tip_root_correction(rotor, a, TSR):
     f_corr = f_tip*f_root
     return f_corr
 
-def heavy_loading(rotor):
+def heavy_loading_induction(a):
     """
-    Applies Prantl's correction for heavily loaded rotors
+    Applies Prandtl's correction for heavily loaded rotors based on induction factors
     """
+    CT1 = 1.816
+
     
+    if a>1-np.sqrt(CT1)/2:
+        CT = CT1-4*(np.sqrt(CT1)-1)(1-a)
+    else:
+        CT = 4*a(1-a)
+    return CT
+
+def heavy_loading_thrust(CT):
+    """
+    Applies Prandtl's correction for heavily loaded rotors based on thrust coefficient
+    """
+    CT1 = 1.816
+    CT2 = 2*np.sqrt(CT1) - CT1
+    
+    if CT>CT2:
+        a = 1+(CT-CT1)/(4*np.sqrt(CT)-4)
+    else:
+        a = 1/2.-np.sqrt(1-CT)/2
+    
+    return a
 
 def polarvalues(alpha):
     pol = xlrd.open_workbook("polar_DU95W180.xlsx")
