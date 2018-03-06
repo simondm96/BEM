@@ -94,7 +94,15 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
     return x_start2 + (data-x_start1)*(x_end2-x_start2)/(x_end1-x_start1)
 
 
-def polarvalues(
-    
+def polarvalues(alpha):
+    pol = xlrd.open_workbook("polar_DU95W180.xlsx")
+    pol = pol.sheet_by_index(0)
+    for i in range(2, 62):
+        if pol.cell_value(i,0)<= alpha <=pol.cell_value(i+1,0):
+            data = []
+            for n in range(3):
+                b = pol.cell_value(i, n)
+                data.append(b)
+    return data
 
 
