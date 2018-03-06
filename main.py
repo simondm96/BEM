@@ -99,9 +99,15 @@ def polarvalues(alpha):
     pol = pol.sheet_by_index(0)
     for i in range(2, 62):
         if pol.cell_value(i,0)<= alpha <=pol.cell_value(i+1,0):
+            xp = []
             data = []
+            xp.append(pol.cell_value(i,0))
+            xp.append(pol.cell_value(i+1,0))
             for n in range(3):
-                b = pol.cell_value(i, n)
+                fp = []
+                fp.append(pol.cell_value(i,n+1))
+                fp.append(pol.cell_value(i+1,n+1))
+                b = np.interp(alpha, xp, fp)
                 data.append(b)
     return data
 
