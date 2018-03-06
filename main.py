@@ -109,11 +109,13 @@ def heavy_loading_induction(a):
     """
     CT1 = 1.816
 
-    
+    CT = np.where(a>=1-np.sqrt(CT1)/2, CT1-4*(np.sqrt(CT1)-1)*(1-a), 4*a*(1-a))
+    """
     if a>1-np.sqrt(CT1)/2:
         CT = CT1-4*(np.sqrt(CT1)-1)(1-a)
     else:
         CT = 4*a(1-a)
+    """
     return CT
 
 def heavy_loading_thrust(CT):
@@ -122,12 +124,15 @@ def heavy_loading_thrust(CT):
     """
     CT1 = 1.816
     CT2 = 2*np.sqrt(CT1) - CT1
+    print(CT2)
     
+    a = np.where(CT>=CT2, 1+(CT-CT1)/(4*np.sqrt(CT)-4), 1/2.-np.sqrt(1-CT)/2)
+    """
     if CT>CT2:
         a = 1+(CT-CT1)/(4*np.sqrt(CT)-4)
     else:
         a = 1/2.-np.sqrt(1-CT)/2
-    
+    """
     return a
 
 def polarvalues(alpha):
