@@ -10,6 +10,8 @@ About: Main file for a simple BEM code for AE4135
 
 import numpy as np
 import matplotlib.pyplot as plt
+import xlrd
+import xlwt
 
 class rotor:
     """
@@ -92,20 +94,7 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
     return x_start2 + (data-x_start1)*(x_end2-x_start2)/(x_end1-x_start1)
 
 
-def load_polar(filename, appendCSV=True):
-    """
-    Loads a polar from a file with title and headers
+def polarvalues(
     
-    Input:
-            filename  = str, name of the file which contains the polar
-            AppendCSV = Bool, defines if '.csv' should be added to filename, defaults to True
-          
-    Output:
-            polar     =  numpy array containing AoA (degrees), Cl, Cd, Cm
-    """
-    if appendCSV:
-        filename += '.csv' 
-    polar = np.genfromtxt(filename, delimiter=',', skip_header=2)
-    
-    return polar
+
 
