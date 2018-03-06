@@ -44,8 +44,9 @@ class rotor:
         """
         self.ends = np.linspace(r_in, r_out, num=N)
         self.elements = middle_vals(self.ends)
-        self.twist = twist(self.elements, r_in, r_out)
-        self.chord = chord(self.elements, r_in, r_out)
+        self.mu = map_values(self.elements,r_in, r_out, 0.2, 1)
+        self.twist = twist(self.mu)
+        self.chord = chord(self.mu)
         self.num_blades = num_blades
         
         
@@ -53,7 +54,7 @@ def middle_vals(data):
     return np.delete((np.roll(data,1)-data)/2+data,0)
 
 
-def twist(section, r_start, r_end):
+def twist(section):
     """
     Generates a twist distrubution
     
@@ -65,12 +66,10 @@ def twist(section, r_start, r_end):
         twist       = ndarray, the twist for the section(s). If sections is a
                       float, returns a float
     """
-    section_norm = map_values(section,r_start, r_end, 0, 1)
-    twist = 14*(1-section_norm)*np.pi/180.
-    return twist
+    return 14*(1-section)*np.pi/180.
 
 
-def chord(section, r_start, r_end):
+def chord(section):
     """
     Generates a chord distribution
     
@@ -82,9 +81,7 @@ def chord(section, r_start, r_end):
         twist       = ndarray, the chord for the section(s). If section is a
                       float, returns a float
     """
-    section_norm = map_values(section,r_start, r_end, 0, 1)
-    chord = (3*(1-section_norm)+1)
-    return chord
+    return (3*(1-section)+1)
 
 
 def map_values(data, x_start1, x_end1, x_start2, x_end2):
@@ -93,6 +90,24 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
     """
     return x_start2 + (data-x_start1)*(x_end2-x_start2)/(x_end1-x_start1)
 
+def tip_root_correction(rotor, a, TSR):
+    """
+    Applies Prantl's tip and hub correction to the forces
+    """
+    mu_r = rotor.ends[0]/rotor.ends[-1]
+    cst = np.sqrt(1+TSR**2*rotor.mu**2/((1-a)**2))
+    exp_tip = -rotor.num_blades/2*(1-rotor.mu)/rotor.mu*cst
+    exp_root = -rotor.num_blades/2*(rotor.mu-mu_r)/rotor.mu*cst
+    f_tip = 2/np.pi*np.arccos(np.exp(exp_tip))
+    f_root = 2/np.pi*np.arccos(np.exp(exp_root))
+    f_corr = f_tip*f_root
+    return f_corr
+
+def heavy_loading(rotor):
+    """
+    Applies Prantl's correction for heavily loaded rotors
+    """
+    
 
 def polarvalues(alpha):
     pol = xlrd.open_workbook("polar_DU95W180.xlsx")
