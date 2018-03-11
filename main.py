@@ -174,3 +174,5 @@ def inductioncalc(f_azim, f_axial, nblades, rho, u_inf, r, deltar, lamda, R):
     
     return CT, CP, a, aprime
     
+
+    
