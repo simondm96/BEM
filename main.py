@@ -3,7 +3,7 @@
 """
 Created on Sat Mar  3 17:30:34 2018
 
-@author: SiMa
+@author: Simon
 
 About: Main file for a simple BEM code for AE4135
 """
@@ -23,8 +23,8 @@ class rotor:
                           sections of the blade
             ends        = ndarray, contains the ends of each section, has length 
                           len(blades)+1
+            mu          = ndarray, contains the elements normalised to the radius of the rotor
             twist       = ndarray, contains the twist of each section in radians
-            pitch       = float, global blade pitch in radians (should this be included?)
             chord       = ndarray, chord distribution of each section in meter
             num_blades  = float, number of blades
             
@@ -49,9 +49,42 @@ class rotor:
         self.chord = chord(self.mu)
         self.num_blades = num_blades
         
+    @classmethod
+    def tip_root_correction(self, a, TSR):
+        """
+        Applies Prandtl's tip and hub correction to the forces
+        """
+        mu_r = self.ends[0]/self.ends[-1]
+        cst = np.sqrt(1+TSR**2*self.mu**2/((1-a)**2))
+        exp_tip = -self.num_blades/2*(1-self.mu)/self.mu*cst
+        exp_root = -self.num_blades/2*(rotor.mu-mu_r)/self.mu*cst
+        f_tip = 2/np.pi*np.arccos(np.exp(exp_tip))
+        f_root = 2/np.pi*np.arccos(np.exp(exp_root))
+        return f_tip*f_root
+    
+    def heavy_loading_induction(a):
+        """
+        Applies Prandtl's correction for heavily loaded rotors based on induction factors
+        """
+        CT1 = 1.816
+    
+        CT = np.where(a>=1-np.sqrt(CT1)/2, CT1-4*(np.sqrt(CT1)-1)*(1-a), 4*a*(1-a))
+        return CT
+
+    def heavy_loading_thrust(CT):
+        """
+        Applies Prandtl's correction for heavily loaded rotors based on thrust coefficient
+        """
+        CT1 = 1.816
+        CT2 = 2*np.sqrt(CT1) - CT1
         
+        a = np.where(CT>=CT2, 1+(CT-CT1)/(4*np.sqrt(CT1)-4), 1/2.-np.sqrt(1-CT)/2)
+    
+        return a
+        
+
 def middle_vals(data):
-    return np.delete((np.roll(data,1)-data)/2+data,0)
+    return np.diff(data)+np.delete(data, -1)
 
 
 def twist(section):
@@ -60,7 +93,7 @@ def twist(section):
     
     Input:
         section     = ndarray, the section(s) for which the twist should be
-                      calculated
+                      calculated, normalised to the radius of the rotor
                       
     Output:
         twist       = ndarray, the twist for the section(s). If sections is a
@@ -75,7 +108,7 @@ def chord(section):
     
     Input:
         section     = ndarray, the section(s) for which the chord should be
-                      calculated
+                      calculated, normalised to the radius of the rotor
                       
     Output:
         twist       = ndarray, the chord for the section(s). If section is a
@@ -90,38 +123,9 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
     """
     return x_start2 + (data-x_start1)*(x_end2-x_start2)/(x_end1-x_start1)
 
-def tip_root_correction(rotor, a, TSR):
-    """
-    Applies Prandtl's tip and hub correction to the forces
-    """
-    mu_r = rotor.ends[0]/rotor.ends[-1]
-    cst = np.sqrt(1+TSR**2*rotor.mu**2/((1-a)**2))
-    exp_tip = -rotor.num_blades/2*(1-rotor.mu)/rotor.mu*cst
-    exp_root = -rotor.num_blades/2*(rotor.mu-mu_r)/rotor.mu*cst
-    f_tip = 2/np.pi*np.arccos(np.exp(exp_tip))
-    f_root = 2/np.pi*np.arccos(np.exp(exp_root))
-    f_corr = f_tip*f_root
-    return f_corr
 
-def heavy_loading_induction(a):
-    """
-    Applies Prandtl's correction for heavily loaded rotors based on induction factors
-    """
-    CT1 = 1.816
 
-    CT = np.where(a>=1-np.sqrt(CT1)/2, CT1-4*(np.sqrt(CT1)-1)*(1-a), 4*a*(1-a))
-    return CT
 
-def heavy_loading_thrust(CT):
-    """
-    Applies Prandtl's correction for heavily loaded rotors based on thrust coefficient
-    """
-    CT1 = 1.816
-    CT2 = 2*np.sqrt(CT1) - CT1
-    
-    a = np.where(CT>=CT2, 1+(CT-CT1)/(4*np.sqrt(CT1)-4), 1/2.-np.sqrt(1-CT)/2)
-
-    return a
 
 def polarvalues(alpha):
     pol = xlrd.open_workbook("polar_DU95W180.xlsx")
@@ -173,6 +177,4 @@ def inductioncalc(f_azim, f_axial, nblades, rho, u_inf, r, deltar, lamda, R):
     CP = 4*a*((1-a)**2)
     
     return CT, CP, a, aprime
-    
 
-    
