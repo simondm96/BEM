@@ -118,7 +118,6 @@ def heavy_loading_thrust(CT):
     """
     CT1 = 1.816
     CT2 = 2*np.sqrt(CT1) - CT1
-    print(CT2)
     
     a = np.where(CT>=CT2, 1+(CT-CT1)/(4*np.sqrt(CT1)-4), 1/2.-np.sqrt(1-CT)/2)
 
