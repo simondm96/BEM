@@ -48,8 +48,7 @@ class rotor:
         self.twist = twist(self.mu)
         self.chord = chord(self.mu)
         self.num_blades = num_blades
-        
-    @classmethod
+    
     def tip_root_correction(self, a, TSR):
         """
         Applies Prandtl's tip and hub correction to the forces
@@ -57,11 +56,13 @@ class rotor:
         mu_r = self.ends[0]/self.ends[-1]
         cst = np.sqrt(1+TSR**2*self.mu**2/((1-a)**2))
         exp_tip = -self.num_blades/2*(1-self.mu)/self.mu*cst
-        exp_root = -self.num_blades/2*(rotor.mu-mu_r)/self.mu*cst
+        exp_root = -self.num_blades/2*(self.mu-mu_r)/self.mu*cst
         f_tip = 2/np.pi*np.arccos(np.exp(exp_tip))
         f_root = 2/np.pi*np.arccos(np.exp(exp_root))
         return f_tip*f_root
     
+    
+    @staticmethod
     def heavy_loading_induction(a):
         """
         Applies Prandtl's correction for heavily loaded rotors based on induction factors
@@ -127,7 +128,7 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
 
 
 
-def polarvalues(alpha):
+def polarvalues(alpha): #Not very efficient to load the excel file every time...
     pol = xlrd.open_workbook("polar_DU95W180.xlsx")
     pol = pol.sheet_by_index(0)
     for i in range(2, 62):
@@ -149,16 +150,16 @@ def liftdragcalc(twist, u_inf, a, aprime, omega, r, chord, rho):
     v_ax = u_inf*(1-a)
     v_tan = omega*r*(1-aprime)
     
-    ratio = np.v_ax / v_tan
+    ratio = v_ax / v_tan
     
     phi = np.arctan(ratio)
     
     alpha = abs(phi - twist)
     
     vp = np.sqrt(v_ax**2 + v_tan**2)
-    
-    lift = 0.5*chord*rho*(vp**2)*polarvalues(alpha)[1]
-    drag = 0.5*chord*rho*(vp**2)*polarvalues(alpha)[2]
+    polar = polarvalues(alpha)
+    lift = 0.5*chord*rho*(vp**2)*polar[1]
+    drag = 0.5*chord*rho*(vp**2)*polar[2]
     
     f_azim = lift*(v_ax/vp) -drag*(v_tan/vp)
     f_axial = lift*(v_tan/vp) +drag*(v_ax/vp)
