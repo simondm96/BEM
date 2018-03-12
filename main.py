@@ -168,16 +168,21 @@ def inductioncalc(f_azim, f_axial, nblades, rho, u_inf, r, deltar, lamda, R):
 
 
 def run():
-    TSR = 6
-    u_inf = 10
-    R = 50
+    TSR = 6.
+    u_inf = 10.
+    N_blades = 3
+    hubrR = 0.2
+    R = 50.
     pitch = 2*np.pi/180
     a = 0.3
     aprime = 0.0 #starting value
     rho = 1.225
     omega = TSR * u_inf /R
-    rotor_BEM = rotor(3, 0.2*50, 50, twist, chord)
+    rotor_BEM = rotor(N_blades, hubrR*R, R, twist, chord)
     rotor_BEM.loadpolar("polar_DU95W180.csv")
     rotor_BEM.liftdragcalc(pitch, u_inf, a, aprime, omega, rho)
+    
+
+
 
  
