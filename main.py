@@ -8,16 +8,11 @@ Created on Sat Mar  3 17:30:34 2018
 About: Main file for a simple BEM code for AE4135
 """
 
-
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 import xlrd
 import xlwt
 
-pol = xlrd.open_workbook("polar_DU95W180.xlsx")
-pol = pol.sheet_by_index(0)
 
 class rotor:
     """
@@ -68,23 +63,12 @@ class rotor:
         return f_tip*f_root
     
     def loadpolar(self, filename):
-        pol = xlrd.open_workbook(filename)
-        self.polar = pol.sheet_by_index(0)
+        self.polar = np.genfromtxt(filename, delimiter = ",", skip_header = 2)
     
     def polarvalues(self, alpha):
-        for i in range(2, 62):
-            if self.polar.cell_value(i,0)<= alpha <=self.polar.cell_value(i+1,0):
-                xp = []
-                data = []
-                xp.append(self.polar.cell_value(i,0))
-                xp.append(self.polar.cell_value(i+1,0))
-                for n in range(3):
-                    fp = []
-                    fp.append(self.polar.cell_value(i,n+1))
-                    fp.append(self.polar.cell_value(i+1,n+1))
-                    b = np.interp(alpha, xp, fp)
-                    data.append(b)
-        return data
+        cl = np.interp(alpha, self.polar[0], self.polar[1])
+        cd = np.interp(alpha, self.polar[0], self.polar[2])
+        return cl, cd
     
     def liftdragcalc(self, pitch, u_inf, a, aprime, omega, rho):
         v_ax = u_inf*(1-a)
@@ -98,8 +82,8 @@ class rotor:
         
         vp = np.sqrt(v_ax**2 + v_tan**2)
         polar = self.polarvalues(alpha)
-        lift = 0.5*chord*rho*(vp**2)*polar[1]
-        drag = 0.5*chord*rho*(vp**2)*polar[2]
+        lift = 0.5*self.chord*rho*(vp**2)*polar[0]
+        drag = 0.5*self.chord*rho*(vp**2)*polar[1]
         
         f_azim = lift*(v_ax/vp) -drag*(v_tan/vp)
         f_axial = lift*(v_tan/vp) +drag*(v_ax/vp)
@@ -183,6 +167,16 @@ def inductioncalc(f_azim, f_axial, nblades, rho, u_inf, r, deltar, lamda, R):
 
 
 def run():
-    rotor_BEM = rotor(3, 0.2*50, 50, twist, chord)
+    TSR = 6
+    u_inf = 10
+    R = 50
+    pitch = 2*np.pi/180
+    a = 0.3 #starting value
+    aprime = 0.0 #starting value
+    rho = 1.225
+    omega = TSR * u_inf /R
+    rotor_BEM = rotor(3, 0.2*R, R, twist, chord)
+    rotor_BEM.loadpolar("polar_DU95W180.csv")
+    LD = rotor_BEM.liftdragcalc(pitch, u_inf, a, aprime, omega, rho)
 
  
