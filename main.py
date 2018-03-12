@@ -150,7 +150,7 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
 
 
 
-def liftdragcalc(twist, u_inf, a, aprime, omega, r, chord, rho):
+def liftdragcalc(twist, pitch, u_inf, a, aprime, omega, r, chord, rho):
     
     v_ax = u_inf*(1-a)
     v_tan = omega*r*(1-aprime)
@@ -159,7 +159,7 @@ def liftdragcalc(twist, u_inf, a, aprime, omega, r, chord, rho):
     
     phi = np.arctan(ratio)
     
-    alpha = abs(phi - twist)
+    alpha = abs(phi - twist - pitch)
     
     vp = np.sqrt(v_ax**2 + v_tan**2)
     polar = polarvalues(alpha)
