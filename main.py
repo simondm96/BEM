@@ -177,7 +177,7 @@ def run():
     rho = 1.225
     omega = TSR * u_inf /R
     rotor_BEM = rotor(3, 0.2*50, 50, twist, chord)
-    rotor_BEM.loadpolar("polar_DU95W180.xlsx")
+    rotor_BEM.loadpolar("polar_DU95W180.csv")
     rotor_BEM.liftdragcalc(pitch, u_inf, a, aprime, omega, rho)
 
  
