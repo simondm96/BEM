@@ -68,7 +68,7 @@ class rotor:
         return f_tip*f_root
     
     def loadpolar(self, filename):
-        pol = xlrd.open_workbook("polar_DU95W180.xlsx")
+        pol = xlrd.open_workbook(filename)
         self.polar = pol.sheet_by_index(0)
     
     def polarvalues(self, alpha):
@@ -184,3 +184,6 @@ def inductioncalc(f_azim, f_axial, nblades, rho, u_inf, r, deltar, lamda, R):
     
     return CT, CP, a, aprime
 
+def run():
+    rotor_BEM = rotor(3, 0.2*50, 50, twist, chord)
+    
