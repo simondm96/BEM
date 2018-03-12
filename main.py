@@ -86,6 +86,26 @@ class rotor:
                     data.append(b)
         return data
     
+    def liftdragcalc(self, pitch, u_inf, a, aprime, omega, rho):
+        v_ax = u_inf*(1-a)
+        v_tan = omega*self.elements*(1-aprime)
+        
+        ratio = v_ax / v_tan
+        
+        phi = np.arctan(ratio)
+        
+        alpha = abs(phi - self.twist - pitch)
+        
+        vp = np.sqrt(v_ax**2 + v_tan**2)
+        polar = self.polarvalues(alpha)
+        lift = 0.5*chord*rho*(vp**2)*polar[1]
+        drag = 0.5*chord*rho*(vp**2)*polar[2]
+        
+        f_azim = lift*(v_ax/vp) -drag*(v_tan/vp)
+        f_axial = lift*(v_tan/vp) +drag*(v_ax/vp)
+        
+        return alpha, lift, drag, f_azim, f_axial
+    
     @staticmethod
     def heavy_loading_induction(a):
         """
@@ -149,29 +169,6 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
     return x_start2 + (data-x_start1)*(x_end2-x_start2)/(x_end1-x_start1)
 
 
-
-def liftdragcalc(twist, pitch, u_inf, a, aprime, omega, r, chord, rho):
-    
-    v_ax = u_inf*(1-a)
-    v_tan = omega*r*(1-aprime)
-    
-    ratio = v_ax / v_tan
-    
-    phi = np.arctan(ratio)
-    
-    alpha = abs(phi - twist - pitch)
-    
-    vp = np.sqrt(v_ax**2 + v_tan**2)
-    polar = polarvalues(alpha)
-    lift = 0.5*chord*rho*(vp**2)*polar[1]
-    drag = 0.5*chord*rho*(vp**2)*polar[2]
-    
-    f_azim = lift*(v_ax/vp) -drag*(v_tan/vp)
-    f_axial = lift*(v_tan/vp) +drag*(v_ax/vp)
-    
-    return alpha, lift, drag, f_azim, f_axial
-
-
 def inductioncalc(f_azim, f_axial, nblades, rho, u_inf, r, deltar, lamda, R):
     #axial induction
     A_a = 2*np.pi()*r*deltar
@@ -184,6 +181,8 @@ def inductioncalc(f_azim, f_axial, nblades, rho, u_inf, r, deltar, lamda, R):
     
     return CT, CP, a, aprime
 
+
 def run():
     rotor_BEM = rotor(3, 0.2*50, 50, twist, chord)
-    
+
+ 
