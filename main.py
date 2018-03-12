@@ -8,6 +8,10 @@ Created on Sat Mar  3 17:30:34 2018
 About: Main file for a simple BEM code for AE4135
 """
 
+pol = xlrd.open_workbook("polar_DU95W180.xlsx")
+pol = pol.sheet_by_index(0)
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import xlrd
@@ -128,9 +132,8 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
 
 
 
-def polarvalues(alpha): #Not very efficient to load the excel file every time...
-    pol = xlrd.open_workbook("polar_DU95W180.xlsx")
-    pol = pol.sheet_by_index(0)
+def polarvalues(alpha):
+
     for i in range(2, 62):
         if pol.cell_value(i,0)<= alpha <=pol.cell_value(i+1,0):
             xp = []
