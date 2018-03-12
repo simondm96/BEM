@@ -3,7 +3,7 @@
 """
 Created on Sat Mar  3 17:30:34 2018
 
-@author: Simon
+@author: Simon, Zyanya, Wessel
 
 About: Main file for a simple BEM code for AE4135
 """
@@ -147,10 +147,6 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
     Maps data with boundaries x_start1 and x_end1 to x_start2 and x_start2
     """
     return x_start2 + (data-x_start1)*(x_end2-x_start2)/(x_end1-x_start1)
-
-
-
-
 
 
 
