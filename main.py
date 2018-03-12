@@ -88,7 +88,7 @@ class rotor:
         f_azim = lift*(v_ax/vp) -drag*(v_tan/vp)
         f_axial = lift*(v_tan/vp) +drag*(v_ax/vp)
         
-        return alpha, lift, drag, f_azim, f_axial
+        return alpha, lift, drag, f_azim, f_axial, phi
     
     @staticmethod
     def heavy_loading_induction(a):
@@ -180,8 +180,27 @@ def run():
     omega = TSR * u_inf /R
     rotor_BEM = rotor(N_blades, hubrR*R, R, twist, chord)
     rotor_BEM.loadpolar("polar_DU95W180.csv")
-    rotor_BEM.liftdragcalc(pitch, u_inf, a, aprime, omega, rho)
+    out = rotor_BEM.liftdragcalc(pitch, u_inf, a, aprime, omega, rho)
+    alphalist = out[0]
+    rRlist = rotor_BEM.mu
+    inflowlist = out[5]
+    return rRlist, alphalist, inflowlist
     
+    
+def plotalpha():
+    rRlist, alphalist, inflowlist = run()
+    plt.plot(rRlist, alphalist)
+    plt.xlabel("r/R")
+    plt.ylabel("Angle of attack \\alpha")
+    plt.show()
+    
+def plotinflow():
+    rRlist, alphalist, inflowlist = run()
+    plt.plot(rRlist, inflowlist)
+    plt.xlabel("r/R")
+    plt.ylabel("Inflow angle \phi")
+    plt.show()
+ 
 
 
 
