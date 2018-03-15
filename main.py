@@ -10,8 +10,6 @@ About: Main file for a simple BEM code for AE4135
 
 import numpy as np
 import matplotlib.pyplot as plt
-import xlrd
-import xlwt
 
 
 class rotor:
@@ -28,9 +26,10 @@ class rotor:
             twist       = ndarray, contains the twist of each section in radians
             chord       = ndarray, chord distribution of each section in meter
             num_blades  = float, number of blades
+            pitch       = float, pitch of the rotor in radians
             
     """
-    def __init__(self, num_blades, r_in, r_out, twist, chord, N=20):
+    def __init__(self, num_blades, r_in, r_out, twist, chord, pitch, N=20):
         """
         Initialises the rotor class
         
@@ -49,6 +48,7 @@ class rotor:
         self.twist = twist(self.mu)
         self.chord = chord(self.mu)
         self.num_blades = num_blades
+        self.pitch = pitch
     
     def tip_root_correction(self, a, TSR):
         """
@@ -63,14 +63,21 @@ class rotor:
         return f_tip*f_root
     
     def loadpolar(self, filename):
+        """
+        Loads a lift and drag polar from a file with 'filename'
+        """
         self.polar = np.genfromtxt(filename, delimiter = ",", skip_header = 2)
     
     def polarvalues(self, alpha):
+        """
+        Linearly interpolates the values from the polar for a given angle of attack
+        """
         cl = np.interp(alpha, self.polar[0], self.polar[1])
         cd = np.interp(alpha, self.polar[0], self.polar[2])
         return cl, cd
     
-    def liftdragcalc(self, pitch, u_inf, a, aprime, omega, rho):
+    def liftdragcalc(self, u_inf, a, aprime, TSR, rho):
+        omega = TSR * u_inf /self.ends[-1]
         v_ax = u_inf*(1-a)
         v_tan = omega*self.elements*(1-aprime)
         
@@ -78,7 +85,7 @@ class rotor:
         
         phi = np.arctan(ratio)
         
-        alpha = abs(phi - self.twist - pitch)
+        alpha = abs(phi - self.twist - self.pitch)
         
         vp = np.sqrt(v_ax**2 + v_tan**2)
         polar = self.polarvalues(alpha)
@@ -89,6 +96,26 @@ class rotor:
         f_axial = lift*(v_tan/vp) +drag*(v_ax/vp)
         
         return alpha, lift, drag, f_azim, f_axial, phi
+    
+    def inductioncalc(self, rho, u_inf, a, aprime, TSR):
+        #axial induction
+        out = self.liftdragcalc(u_inf, a, aprime, TSR, rho)
+        f_azim, f_axial = out[3], out[4]
+        
+        deltar = np.diff(self.ends)
+        A_a = 2*np.pi*self.elements*deltar
+        
+        CT = (f_axial *self.num_blades*deltar)/(0.5*rho*(u_inf**2)*A_a)
+        a = rotor.heavy_loading_thrust(CT)
+        a *= 1/self.tip_root_correction(a, TSR)
+        
+        #azimuthal induction
+        aprime = (f_azim*self.num_blades)/(2*rho*(2*np.pi*self.elements)*(u_inf**2)*(1-a)*TSR*(self.mu))
+        aprime *= 1/self.tip_root_correction(a, TSR)
+        
+        CP = 4*a*((1-a)**2)
+        
+        return CT, CP, a, aprime, out
     
     @staticmethod
     def heavy_loading_induction(a):
@@ -168,40 +195,41 @@ def inductioncalc(f_azim, f_axial, nblades, rho, u_inf, r, deltar, lamda, R):
 
 
 def run():
+    #Input parameters
     TSR = 6.
     u_inf = 10.
     N_blades = 3
     hubrR = 0.2
     R = 50.
-    pitch = 2*np.pi/180
-    a = 0.3
+    pitch = -2*np.pi/180
+    a = 0.3 #starting value
     aprime = 0.0 #starting value
     rho = 1.225
-    omega = TSR * u_inf /R
-    rotor_BEM = rotor(N_blades, hubrR*R, R, twist, chord)
+    #loop parameters
+    n_max = 100
+    n=0
+    diff_a = 1
+    # initialising the rotor class
+    rotor_BEM = rotor(N_blades, hubrR*R, R, twist, chord, pitch)
     rotor_BEM.loadpolar("polar_DU95W180.csv")
-    out = rotor_BEM.liftdragcalc(pitch, u_inf, a, aprime, omega, rho)
-    alphalist = out[0]
-    rRlist = rotor_BEM.mu
-    inflowlist = out[5]
-    return rRlist, alphalist, inflowlist
+    
+    while diff_a>0.01 and n<n_max:
+        a_old = a
+        aprime_old = aprime
+        CT, CP, a, aprime, out = rotor_BEM.inductioncalc(rho, u_inf, a, aprime, TSR)
+        n+=1
+    #print("Iterations: ",n) #uncomment on python 3.x
+    return CT, CP, a, aprime, out
     
     
-def plotalpha():
-    rRlist, alphalist, inflowlist = run()
-    plt.plot(rRlist, alphalist)
-    plt.xlabel("r/R")
-    plt.ylabel("Angle of attack \\alpha")
+    
+def plotdata(xdata, ydata, xname, yname):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(xdata, ydata)
+    ax.set_xlabel(xname)
+    ax.set_ylabel(yname)
     plt.show()
     
-def plotinflow():
-    rRlist, alphalist, inflowlist = run()
-    plt.plot(rRlist, inflowlist)
-    plt.xlabel("r/R")
-    plt.ylabel("Inflow angle \phi")
-    plt.show()
- 
-
-
 
  
