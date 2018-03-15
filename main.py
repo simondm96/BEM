@@ -44,7 +44,7 @@ class rotor:
         """
         self.ends = np.linspace(r_in, r_out, num=N)
         self.elements = middle_vals(self.ends)
-        self.mu = map_values(self.elements,r_in, r_out, 0.2, 1)
+        self.mu = map_values(self.elements, r_in, r_out, r_in/r_out, 1)
         self.twist = twist(self.mu)
         self.chord = chord(self.mu)
         self.num_blades = num_blades
@@ -140,7 +140,7 @@ class rotor:
         
 
 def middle_vals(data):
-    return np.diff(data)+np.delete(data, -1)
+    return np.diff(data)/2+np.delete(data, -1)
 
 
 def twist(section):
@@ -194,7 +194,7 @@ def run():
     aprime = 0.0 #starting value
     rho = 1.225
     #loop parameters
-    n_max = 100
+    n_max = 5
     n=0
     diff_a = 1
     # initialising the rotor class
