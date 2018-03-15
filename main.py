@@ -180,18 +180,6 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
     return x_start2 + (data-x_start1)*(x_end2-x_start2)/(x_end1-x_start1)
 
 
-def inductioncalc(f_azim, f_axial, nblades, rho, u_inf, r, deltar, lamda, R):
-    #axial induction
-    A_a = 2*np.pi()*r*deltar
-    
-    CT = (f_axial *nblades *deltar)/(0.5*rho*(u_inf**2)*A_a)
-    a = 0.5*(1-np.sqrt(1-CT))
-    #azimuthal induction
-    aprime = (f_azim*nblades)/(2*rho*(2*np.pi()*r)*(u_inf**2)*(1-a)*lamda*(r/R))
-    CP = 4*a*((1-a)**2)
-    
-    return CT, CP, a, aprime
-
 
 
 def run():
@@ -231,5 +219,3 @@ def plotdata(xdata, ydata, xname, yname):
     ax.set_ylabel(yname)
     plt.show()
     
-
- 
