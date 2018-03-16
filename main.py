@@ -186,7 +186,7 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
 
 def run():
     #Input parameters
-    TSR = 8.
+    TSR = 6.
     u_inf = 10.
     N_blades = 3
     hubrR = 0.2
@@ -196,7 +196,7 @@ def run():
     aprime = 0.0 #starting value
     rho = 1.225
     #loop parameters
-    n_max = 10
+    n_max = 50
     n=0
     diff_a = 1
     diff_aprime = 1
@@ -213,12 +213,12 @@ def run():
         diffaprime = np.abs(aprime_old-aprime)
         diff_a = np.amax(diffa)
         diff_aprime = np.amax(diffaprime)
-        print("Iteration:",n)
-        print("Difference in a:", diffa)
-        print("Difference in a':", diffaprime)
-        print(diff_a)
+        #print("Iteration:",n)
+        #print("Difference in a:", diffa)
+        #print("Difference in a':", diffaprime)
+        #print(diff_a)
 
-    print("Iterations:",n) #uncomment on python 3.x
+    #print("Iterations:",n) #uncomment on python 3.x
     return CT, CP, a, aprime, out
     
     
