@@ -29,7 +29,7 @@ class rotor:
             pitch       = float, pitch of the rotor in radians
             
     """
-    def __init__(self, num_blades, r_in, r_out, twist, chord, pitch, N=20):
+    def __init__(self, num_blades, r_in, r_out, twist, chord, pitch, N=100):
         """
         Initialises the rotor class
         
@@ -77,15 +77,18 @@ class rotor:
         return cl, cd
     
     def liftdragcalc(self, u_inf, a, aprime, TSR, rho):
+        """
+        Calculates the lift and drag from polar data
+        """
         omega = TSR * u_inf /self.ends[-1]
         v_ax = u_inf*(1-a)
-        v_tan = omega*self.elements*(1-aprime)
+        v_tan = omega*self.elements*(1+aprime)
         
         ratio = v_ax / v_tan
         
         phi = np.arctan(ratio)
         
-        alpha = abs(phi - self.twist - self.pitch)
+        alpha = (phi - self.twist + self.pitch)*180/np.pi #Angle of attack in degrees
         
         vp = np.sqrt(v_ax**2 + v_tan**2)
         polar = self.polarvalues(alpha)
@@ -94,7 +97,6 @@ class rotor:
         
         f_azim = lift*(v_ax/vp) -drag*(v_tan/vp)
         f_axial = lift*(v_tan/vp) +drag*(v_ax/vp)
-        
         return alpha, lift, drag, f_azim, f_axial, phi
     
     def inductioncalc(self, rho, u_inf, a, aprime, TSR):
@@ -184,12 +186,12 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
 
 def run():
     #Input parameters
-    TSR = 6.
+    TSR = 8.
     u_inf = 10.
     N_blades = 3
     hubrR = 0.2
     R = 50.
-    pitch = -2*np.pi/180
+    pitch = 2*np.pi/180
     a = 0.3 #starting value
     aprime = 0.0 #starting value
     rho = 1.225
@@ -201,11 +203,19 @@ def run():
     rotor_BEM = rotor(N_blades, hubrR*R, R, twist, chord, pitch)
     rotor_BEM.loadpolar("polar_DU95W180.csv")
     
-    while diff_a>0.01 and n<n_max:
+    while diff_a>0.0001 and n<n_max:
         a_old = a
         aprime_old = aprime
         CT, CP, a, aprime, out = rotor_BEM.inductioncalc(rho, u_inf, a, aprime, TSR)
         n+=1
+        diffa = np.abs(a_old-a)
+        diffaprime = np.abs(a_old-aprime)
+        diff_a = np.amax(diffa)
+        #print("Iteration:",n)
+        #print("a:", diffa)
+        #print("a':", diffaprime)
+        #print(diff_a)
+
     #print("Iterations: ",n) #uncomment on python 3.x
     return CT, CP, a, aprime, out
     
@@ -215,6 +225,8 @@ def plotdata(xdata, ydata, xname, yname):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(xdata, ydata)
+    ax.set_xlim([0, xdata[-1]*1.05])
+    ax.set_ylim([0, np.amax(ydata)*1.05])
     ax.set_xlabel(xname)
     ax.set_ylabel(yname)
     plt.show()
