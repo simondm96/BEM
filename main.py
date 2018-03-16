@@ -72,8 +72,8 @@ class rotor:
         """
         Linearly interpolates the values from the polar for a given angle of attack
         """
-        cl = np.interp(alpha, self.polar[0], self.polar[1])
-        cd = np.interp(alpha, self.polar[0], self.polar[2])
+        cl = np.interp(alpha, self.polar[:,0], self.polar[:,1])
+        cd = np.interp(alpha, self.polar[:,0], self.polar[:,2])
         return cl, cd
     
     def liftdragcalc(self, u_inf, a, aprime, TSR, rho):
@@ -196,27 +196,29 @@ def run():
     aprime = 0.0 #starting value
     rho = 1.225
     #loop parameters
-    n_max = 5
+    n_max = 10
     n=0
     diff_a = 1
+    diff_aprime = 1
     # initialising the rotor class
     rotor_BEM = rotor(N_blades, hubrR*R, R, twist, chord, pitch)
     rotor_BEM.loadpolar("polar_DU95W180.csv")
     
-    while diff_a>0.0001 and n<n_max:
+    while (diff_a>0.0001 and diff_aprime>0.0001) and n<n_max:
         a_old = a
         aprime_old = aprime
         CT, CP, a, aprime, out = rotor_BEM.inductioncalc(rho, u_inf, a, aprime, TSR)
         n+=1
         diffa = np.abs(a_old-a)
-        diffaprime = np.abs(a_old-aprime)
+        diffaprime = np.abs(aprime_old-aprime)
         diff_a = np.amax(diffa)
-        #print("Iteration:",n)
-        #print("a:", diffa)
-        #print("a':", diffaprime)
-        #print(diff_a)
+        diff_aprime = np.amax(diffaprime)
+        print("Iteration:",n)
+        print("Difference in a:", diffa)
+        print("Difference in a':", diffaprime)
+        print(diff_a)
 
-    #print("Iterations: ",n) #uncomment on python 3.x
+    print("Iterations:",n) #uncomment on python 3.x
     return CT, CP, a, aprime, out
     
     
