@@ -186,7 +186,7 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
 
 def run():
     #Input parameters
-    TSR = 6.
+    TSR = 10.
     u_inf = 10.
     N_blades = 3
     hubrR = 0.2
@@ -200,6 +200,9 @@ def run():
     n=0
     diff_a = 1
     diff_aprime = 1
+    #convergence history
+    a_list = []
+    aprime_list = []
     # initialising the rotor class
     rotor_BEM = rotor(N_blades, hubrR*R, R, twist, chord, pitch)
     rotor_BEM.loadpolar("polar_DU95W180.csv")
@@ -209,17 +212,24 @@ def run():
         aprime_old = aprime
         CT, CP, a, aprime, out = rotor_BEM.inductioncalc(rho, u_inf, a, aprime, TSR)
         n+=1
+        a = 0.25*a + 0.75*a_old
+        aprime = 0.25*aprime + 0.75*aprime_old
         diffa = np.abs(a_old-a)
         diffaprime = np.abs(aprime_old-aprime)
         diff_a = np.amax(diffa)
         diff_aprime = np.amax(diffaprime)
-        #print("Iteration:",n)
-        #print("Difference in a:", diffa)
-        #print("Difference in a':", diffaprime)
-        #print(diff_a)
-
-    #print("Iterations:",n) #uncomment on python 3.x
-    return CT, CP, a, aprime, out
+        a_list.append(diff_a)
+        aprime_list.append(diff_aprime)
+        print("Iteration:",n)
+        print("Difference in a:", diffa)
+        print("Difference in a':", diffaprime)
+    
+    
+    print("Iterations:",n) #uncomment on python 3.x
+    print(a_list)
+    print(aprime_list)
+    conv = np.vstack((np.array(a_list), np.array(aprime_list)))
+    return CT, CP, a, aprime, out, conv
     
     
     
