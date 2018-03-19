@@ -108,7 +108,7 @@ class rotor:
         A_a = 2*np.pi*self.elements*deltar
         
         CT = (f_axial *self.num_blades*deltar)/(0.5*rho*(u_inf**2)*A_a)
-        a = rotor.heavy_loading_thrust(CT)
+        a = heavy_loading_thrust(CT)
         a *= 1/self.tip_root_correction(a, TSR)
         
         #azimuthal induction
@@ -119,26 +119,26 @@ class rotor:
         
         return CT, CP, a, aprime, out
     
-    @staticmethod
-    def heavy_loading_induction(a):
-        """
-        Applies Prandtl's correction for heavily loaded rotors based on induction factors
-        """
-        CT1 = 1.816
     
-        CT = np.where(a>=1-np.sqrt(CT1)/2, CT1-4*(np.sqrt(CT1)-1)*(1-a), 4*a*(1-a))
-        return CT
+def heavy_loading_induction(a):
+    """
+    Applies Prandtl's correction for heavily loaded rotors based on induction factors
+    """
+    CT1 = 1.816
 
-    def heavy_loading_thrust(CT):
-        """
-        Applies Prandtl's correction for heavily loaded rotors based on thrust coefficient
-        """
-        CT1 = 1.816
-        CT2 = 2*np.sqrt(CT1) - CT1
-        
-        a = np.where(CT>=CT2, 1+(CT-CT1)/(4*np.sqrt(CT1)-4), 1/2.-np.sqrt(1-CT)/2)
+    CT = np.where(a>=1-np.sqrt(CT1)/2, CT1-4*(np.sqrt(CT1)-1)*(1-a), 4*a*(1-a))
+    return CT
+
+def heavy_loading_thrust(CT):
+    """
+    Applies Prandtl's correction for heavily loaded rotors based on thrust coefficient
+    """
+    CT1 = 1.816
+    CT2 = 2*np.sqrt(CT1) - CT1
     
-        return a
+    a = np.where(CT>=CT2, 1+(CT-CT1)/(4*np.sqrt(CT1)-4), 1/2.-np.sqrt(1-CT)/2)
+
+    return a
         
 
 def middle_vals(data):
