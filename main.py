@@ -78,7 +78,7 @@ class rotor:
     
     def liftdragcalc(self, u_inf, a, aprime, TSR, rho):
         """
-        Calculates the lift and drag from polar data
+        Calculates the lift and drag from polar data fr given conditions
         """
         omega = TSR * u_inf /self.ends[-1]
         v_ax = u_inf*(1-a)
@@ -100,6 +100,9 @@ class rotor:
         return alpha, lift, drag, f_azim, f_axial, phi
     
     def inductioncalc(self, rho, u_inf, a, aprime, TSR):
+        """
+        Calculates the axial and azimuthal induction for given conditions
+        """
         #axial induction
         out = self.liftdragcalc(u_inf, a, aprime, TSR, rho)
         f_azim, f_axial = out[3], out[4]
@@ -208,32 +211,36 @@ def run():
     rotor_BEM.loadpolar("polar_DU95W180.csv")
     
     while (diff_a>0.0001 and diff_aprime>0.0001) and n<n_max:
+        #save old induction factors
         a_old = a
         aprime_old = aprime
+        #Calculate the solution for the given induction factors
         CT, CP, a, aprime, out = rotor_BEM.inductioncalc(rho, u_inf, a, aprime, TSR)
-        n+=1
+        #Correct the new induction factors
         a = 0.25*a + 0.75*a_old
         aprime = 0.25*aprime + 0.75*aprime_old
+        #Find the difference with the old induction factors
         diffa = np.abs(a_old-a)
         diffaprime = np.abs(aprime_old-aprime)
+        #Use the maximum difference as a measure of the convergence
         diff_a = np.amax(diffa)
         diff_aprime = np.amax(diffaprime)
         a_list.append(diff_a)
         aprime_list.append(diff_aprime)
-        print("Iteration:",n)
-        print("Difference in a:", diffa)
-        print("Difference in a':", diffaprime)
+        #Next iteration!        
+        n+=1
     
     
     print("Iterations:",n) #uncomment on python 3.x
-    print(a_list)
-    print(aprime_list)
     conv = np.vstack((np.array(a_list), np.array(aprime_list)))
     return CT, CP, a, aprime, out, conv
     
     
     
-def plotdata(xdata, ydata, xname, yname):
+def plotdata(xdata, ydata, xname, yname, fname, extension=".eps"):
+    """
+    Plots data with given names and saves it to a filename with extension
+    """
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(xdata, ydata)
@@ -241,5 +248,6 @@ def plotdata(xdata, ydata, xname, yname):
     ax.set_ylim([0, np.amax(ydata)*1.05])
     ax.set_xlabel(xname)
     ax.set_ylabel(yname)
+    plt.savefig(fname+extension)
     plt.show()
     
