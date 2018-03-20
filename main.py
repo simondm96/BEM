@@ -33,7 +33,7 @@ class rotor:
             pitch       = float, pitch of the rotor in radians
             
     """
-    def __init__(self, num_blades, r_in, r_out, twist, chord, pitch, N=100):
+    def __init__(self, num_blades, r_in, r_out, twist, chord, pitch, spacing = 'norm', N=100):
         """
         Initialises the rotor class
         
@@ -46,7 +46,10 @@ class rotor:
             N           = int, number of ends. The number of elements is N-1
             
         """
-        self.ends = np.linspace(r_in, r_out, num=N)
+        if spacing != 'norm':
+            self.ends = 0.5*(1-np.cos(np.linspace(r_in, r_out, num=N)))
+        else:
+            self.ends = np.linspace(r_in, r_out, num=N)
         self.elements = middle_vals(self.ends)
         self.mu = map_values(self.elements, r_in, r_out, r_in/r_out, 1)
         self.twist = twist(self.mu)
