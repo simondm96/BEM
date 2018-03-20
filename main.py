@@ -11,6 +11,10 @@ About: Main file for a simple BEM code for AE4135
 import numpy as np
 import matplotlib.pyplot as plt
 
+from matplotlib import rc
+rc('font',**{'family':'serif','serif':['Bookman'], 'size':10})
+rc('text', usetex=True)
+
 
 class rotor:
     """
@@ -187,9 +191,8 @@ def map_values(data, x_start1, x_end1, x_start2, x_end2):
 
 
 
-def run():
+def run(TSR):
     #Input parameters
-    TSR = 10.
     u_inf = 10.
     N_blades = 3
     hubrR = 0.2
@@ -237,17 +240,73 @@ def run():
     
     
     
-def plotdata(xdata, ydata, xname, yname, fname, extension=".eps"):
+def plotdata_single(xdata, ydata, xname, yname, fname, extension=".eps"):
     """
     Plots data with given names and saves it to a filename with extension
     """
-    fig = plt.figure()
+    legend = ["TSR = 10", "TSR = 8", "TSR = 6"]
+    fig = plt.figure(figsize=(6,4.5))
     ax = fig.add_subplot(111)
-    ax.plot(xdata, ydata)
+    for i in range(3):
+        ax.plot(xdata, ydata[:,i], label = legend[i])
     ax.set_xlim([0, xdata[-1]*1.05])
     ax.set_ylim([0, np.amax(ydata)*1.05])
     ax.set_xlabel(xname)
     ax.set_ylabel(yname)
+    ax.legend()
+    ax.grid(b=True,alpha=0.5,linestyle='--')
     plt.savefig(fname+extension)
+    plt.show()
+
+def plotdata_double(xdata, ydata, xname, yname, fname, extension=".eps"):
+    """
+    Plots data with given names and saves it to a filename with extension, use two datasets with 3 TSRs
+    """
+    legend = ["TSR10", "TSR8", "TSR6"]
+    legend2 = ["a", "a'"]
+    fname_l = []
+    for leg in legend:
+        fname_l.append(fname+leg)
+
+        
+    fig1 = plt.figure(figsize=(6,4.5))
+    ax1 = fig1.add_subplot(111)
+    for i in range(2):
+        ax1.plot(xdata, ydata[:,i], label = legend2[i])
+    ax1.set_xlim([0, xdata[-1]*1.05])
+    ax1.set_ylim([0, np.amax(ydata[:,0:2])*1.05])
+    ax1.set_xlabel(xname)
+    ax1.set_ylabel(yname)
+    ax1.legend()
+    ax1.grid(b=True,alpha=0.5,linestyle='--')
+    plt.savefig(fname_l[0]+extension)
+    
+    fig2 = plt.figure(figsize=(6,4.5))
+    ax2 = fig2.add_subplot(111)
+    for i in range(2):
+        ax2.plot(xdata, ydata[:,i+2], label = legend2[i])
+    
+    ax2.set_xlim([0, xdata[-1]*1.05])
+    ax2.set_ylim([0, np.amax(ydata[:,2:4])*1.05])
+    ax2.set_xlabel(xname)
+    ax2.set_ylabel(yname)
+    ax2.legend()
+    ax2.grid(b=True,alpha=0.5,linestyle='--')
+    plt.savefig(fname_l[1]+extension)
+    
+    
+    fig3 = plt.figure(figsize=(6,4.5))
+    
+    ax3 = fig3.add_subplot(111)
+    for i in range(2):
+        ax3.plot(xdata, ydata[:,i+4], label = legend2[i])
+    
+    ax3.set_xlim([0, xdata[-1]*1.05])
+    ax3.set_ylim([0, np.amax(ydata[:,4:6])*1.05])
+    ax3.set_xlabel(xname)
+    ax3.set_ylabel(yname)
+    ax3.legend()
+    ax3.grid(b=True,alpha=0.5,linestyle='--')
+    plt.savefig(fname[2]+extension)
     plt.show()
     
