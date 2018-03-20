@@ -313,3 +313,5 @@ def plotdata_double(xdata, ydata, xname, yname, fname, extension=".eps"):
     plt.savefig(fname[2]+extension)
     plt.show()
     
+#out from liftdragcalc is: return alpha, lift, drag, f_azim, f_axial, phi
+
