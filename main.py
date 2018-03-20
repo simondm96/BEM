@@ -239,7 +239,7 @@ def run(TSR):
     
     print("Iterations:",n) #uncomment on python 3.x
     conv = np.vstack((np.array(a_list), np.array(aprime_list)))
-    return CT, CP, a, aprime, out, conv
+    return CT, CP, a, aprime, out, conv, rotor_BEM
     
     
     
