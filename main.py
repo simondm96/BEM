@@ -47,7 +47,8 @@ class rotor:
             
         """
         if spacing != 'norm':
-            self.ends = 0.5*(1-np.cos(np.linspace(r_in, r_out, num=N)))
+            mapping = 0.5*(1-np.cos(np.linspace(0, np.pi, num=N)))
+            self.ends = map_values(mapping, 0, 1, r_in, r_out)
         else:
             self.ends = np.linspace(r_in, r_out, num=N)
         self.elements = middle_vals(self.ends)
@@ -205,7 +206,7 @@ def run(TSR):
     aprime = 0.0 #starting value
     rho = 1.225
     #loop parameters
-    n_max = 50
+    n_max = 100
     n=0
     diff_a = 1
     diff_aprime = 1
@@ -213,7 +214,7 @@ def run(TSR):
     a_list = []
     aprime_list = []
     # initialising the rotor class
-    rotor_BEM = rotor(N_blades, hubrR*R, R, twist, chord, pitch)
+    rotor_BEM = rotor(N_blades, hubrR*R, R, twist, chord, pitch, spacing = 'norm', N=100)
     rotor_BEM.loadpolar("polar_DU95W180.csv")
     
     while (diff_a>0.0001 and diff_aprime>0.0001) and n<n_max:
@@ -242,15 +243,15 @@ def run(TSR):
     return CT, CP, a, aprime, out, conv, rotor_BEM
     
     
-    
+#------------PLOTTING STUFF -------------------------
 def plotdata_single(xdata, ydata, xname, yname, fname, extension=".eps"):
     """
     Plots data with given names and saves it to a filename with extension
     """
-    legend = ["TSR = 10", "TSR = 8", "TSR = 6"]
+    legend = ["TSR = 6","TSR = 8", "TSR = 10"]
     fig = plt.figure(figsize=(6,4.5))
     ax = fig.add_subplot(111)
-    for i in range(3):
+    for i in range(len(legend)):
         ax.plot(xdata, ydata[:,i], label = legend[i])
     ax.set_xlim([0, xdata[-1]*1.05])
     ax.set_ylim([0, np.amax(ydata)*1.05])
@@ -310,7 +311,25 @@ def plotdata_double(xdata, ydata, xname, yname, fname, extension=".eps"):
     ax3.set_ylabel(yname)
     ax3.legend()
     ax3.grid(b=True,alpha=0.5,linestyle='--')
-    plt.savefig(fname[2]+extension)
+    plt.savefig(fname_l[2]+extension)
+    plt.show()
+    
+def plotdata_comparison(xdata, ydata, xname, yname, fname, extension=".eps"):
+    """
+    Plots data with given names and saves it to a filename with extension
+    """
+    legend = ["Uniform spacing", "Cosine spacing"]
+    fig = plt.figure(figsize=(6,4.5))
+    ax = fig.add_subplot(111)
+    for i in range(len(legend)):
+        ax.plot(xdata[i], ydata[i], label = legend[i])
+    ax.set_xlim([0, xdata[-1][-1]*1.05])
+    ax.set_ylim([0, np.amax(ydata[-1])*1.05])
+    ax.set_xlabel(xname)
+    ax.set_ylabel(yname)
+    ax.legend()
+    ax.grid(b=True,alpha=0.5,linestyle='--')
+    plt.savefig(fname+extension)
     plt.show()
     
 #out from liftdragcalc is: return alpha, lift, drag, f_azim, f_axial, phi
